@@ -3,7 +3,7 @@ import java.io.*;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         int N = 1;
         while (true) {
             String path = new Scanner(System.in).nextLine();
@@ -18,8 +18,8 @@ public class Main {
             System.out.println("Путь указан верно. Кол-во верно указанных путей к файлу: " + N);
             N++;
 
-            int minLength = Integer.MAX_VALUE;
-            int maxLength = Integer.MIN_VALUE;
+            int yandexCounter = 0;
+            int googleCounter = 0;
             int lineCounter = 0;
             String line;
             try {
@@ -30,19 +30,36 @@ public class Main {
                     if (line.length() > 1024) {
                         throw new LineTooLongException("Длинная строка (Строка >= 1024 символа).");
                     }
-                    if (line.length() < minLength) {
-                        minLength = line.length();
-                    } else if (line.length() >= maxLength) {
-                        maxLength = line.length();
+                    String[] firstBrackets = line.split("\"");
+                    String parts[] = firstBrackets[5].split(";");
+                    String fragment = null;
+                    if (parts.length >= 2) {
+                        fragment = parts[1];
+                        fragment.split("/");
+                        for (String part : parts) {
+                            if (part.contains("YandexBot")) {
+                                part.trim();
+                                yandexCounter++;
+                            }
+
+                            if (part.contains("Googlebot")) {
+                                part.trim();
+                                googleCounter++;
+                            }
+                        }
                     }
                     lineCounter++;
                 }
                 System.out.println("Общее кол-во строк в файле: " + lineCounter);
-                System.out.println("Длина самой короткой строки: " + minLength);
-                System.out.println("Длина самой длинной строки: " + maxLength);
+                System.out.println("YandexBot: " + yandexCounter + " или " + Math.round(percent(yandexCounter, lineCounter)) + "% от общего");
+                System.out.println("Googlebot: " + googleCounter + " или " + Math.round(percent(googleCounter, lineCounter)) + "% от общего");
+
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
+    }
+    private static double percent(int a, int b) {
+        return (double) a / (double) b * 100;
     }
 }
