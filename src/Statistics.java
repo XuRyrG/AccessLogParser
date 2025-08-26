@@ -11,7 +11,8 @@ public class Statistics {
 
     private Set<String> existingPages;
     private Map<String, Integer> countOs;
-
+    private Set<String> nonExistingPages;
+    private Map<String, Integer> browserStatistics;
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -19,6 +20,8 @@ public class Statistics {
         this.maxTime = null;
         this.existingPages = new HashSet<>();
         this.countOs = new HashMap<>();
+        this.nonExistingPages = new HashSet<>();
+        this.browserStatistics = new HashMap<>();
 
     }
 
@@ -34,6 +37,12 @@ public class Statistics {
         if (entry.getStatusCode()==200) {
             existingPages.add(entry.getPath());
         }
+        if (entry.getStatusCode() == 404) {
+            nonExistingPages.add(entry.getPath());
+        }
+
+        String browser=entry.getUserAgent().getBrowser();
+        browserStatistics.put(browser,browserStatistics.getOrDefault(browser,0)+1);
 
 
         String os= entry.getUserAgent().getOperatingSystem();
@@ -56,6 +65,10 @@ public class Statistics {
         return new HashSet<>(existingPages);
     }
 
+    public Set<String> getNonExistingPages() {
+        return new HashSet<>(nonExistingPages);
+    }
+
 
     public Map<String,Double> getOsStatistics() {
         Map<String,Double> res=new HashMap<>();
@@ -70,6 +83,24 @@ public class Statistics {
             int count=countOs.get(os);
             double fraction=(double) count/total;
             res.put(os,fraction);
+        }
+        return res;
+    }
+
+    public Map<String,Double> getBrowserStatistics() {
+        Map<String,Double> res=new HashMap<>();
+        int total=0;
+        for (int count:browserStatistics.values()) {
+            total+=count;
+        }
+        if (total==0) {
+            return res;
+        }
+
+        for (String browser:browserStatistics.keySet()) {
+            int count=browserStatistics.get(browser);
+            double fraction=(double) count/total;
+            res.put(browser,fraction);
         }
         return res;
     }
