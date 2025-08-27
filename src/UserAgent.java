@@ -10,21 +10,21 @@ public class UserAgent {
     }
 
     private String parseOperatingSystem(String userAgent) {
-        if (userAgent.contains("Windows")) return "Windows";
-        if (userAgent.contains("Mac")) return "macOS";
-        if (userAgent.contains("Linux")) return "Linux";
+        userAgent = userAgent.toLowerCase();
+        if (userAgent.contains("windows")) return "Windows";
+        if (userAgent.contains("mac")) return "macOS";
+        if (userAgent.contains("linux")) return "Linux";
 
         return "Other";
     }
 
     private String parseBrowser(String userAgent) {
         userAgent = userAgent.toLowerCase();
-
-        if (userAgent.contains("Edge")) return "Edge";
-        if (userAgent.contains("Firefox")) return "Firefox";
-        if (userAgent.contains("Chrome")) return "Chrome";
-        if (userAgent.contains("Safari")) return "Safari";
-        if (userAgent.contains("Opera")) return "Opera";
+        if (userAgent.contains("edge")) return "Edge";
+        if (userAgent.contains("firefox")) return "Firefox";
+        if (userAgent.contains("chrome")) return "Chrome";
+        if (userAgent.contains("safari")) return "Safari";
+        if (userAgent.contains("opera")) return "Opera";
 
         return "Other";
     }
