@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Statistics {
     private long totalTraffic;
@@ -16,6 +17,9 @@ public class Statistics {
     private int userVisits;
     private int errorRequests;
     private Set<String> uniqueUserIP;
+    private Map<Integer, Integer> visitPerSecond;
+    private Set<String> refererDomain;
+    private Map<String, Integer> visitPerUsers;
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -28,6 +32,9 @@ public class Statistics {
         this.userVisits = 0;
         this.errorRequests = 0;
         this.uniqueUserIP = new HashSet<>();
+        this.visitPerSecond = new HashMap<>();
+        this.refererDomain = new HashSet<>();
+        this.visitPerUsers = new HashMap<>();
 
     }
 
@@ -58,15 +65,53 @@ public class Statistics {
         if (!isBot) {
             userVisits++;
             uniqueUserIP.add(entry.getIpAddress());
-        }
 
+            int second = entry.getDateTime().getSecond();
+            visitPerSecond.put(second, visitPerSecond.getOrDefault(second, 0) + 1);
+
+            visitPerUsers.put(entry.getIpAddress(), visitPerUsers.getOrDefault(entry.getIpAddress(), 0) + 1);
+        }
+        String referer = entry.getReferer();
+        if (referer != null && !referer.equals("-")) {
+            String domain = extractDomain(referer);
+            if (domain != null) {
+                refererDomain.add(domain);
+            }
+        }
 
         int statusCode = entry.getStatusCode();
         if (statusCode >= 400 && statusCode < 600) {
             errorRequests++;
         }
-
     }
+
+    private String extractDomain(String url) {
+        try {
+            String domain = url.replaceFirst("^(https?://)?(www\\.)?", "");
+            domain = domain.split("/")[0];
+            return domain;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    public int getPeakVisitsPerSecond() {
+        return visitPerSecond.values().stream()
+                .mapToInt(Integer::intValue)
+                .max()
+                .orElse(0);
+    }
+    public Set<String> getRefererDomains() {
+        return refererDomain.stream()
+                .collect(Collectors.toSet());
+    }
+
+    public int getMaxVisitsPerUser() {
+        return visitPerUsers.values().stream()
+                .mapToInt(Integer::intValue)
+                .max()
+                .orElse(0);
+    }
+
     public double getTrafficRate() {
         if (minTime == null || maxTime == null) {
             return 0;
@@ -78,6 +123,9 @@ public class Statistics {
         }
 
         return (double) totalTraffic / hours;
+    }
+    public Map<Integer, Integer> getVisitPerSecondStatistics() {
+        return new HashMap<>(visitPerSecond);
     }
 
     public Set<String> getExistingPages() {
